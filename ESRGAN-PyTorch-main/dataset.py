@@ -75,8 +75,8 @@ class BaseImageDataset(Dataset):
             batch_index: int
     ) -> [Tensor, Tensor]:
         # Read a batch of ground truth images
-        transform = torchvision.transforms.Compose([transforms.Resize((1356,2040))])
-        transform1 = torchvision.transforms.Compose([transforms.Resize((339,510))])
+        transform = torchvision.transforms.Compose([torchvision.transforms.Resize((1356,2040))])
+        transform1 = torchvision.transforms.Compose([torchvision.transforms.Resize((339,510))])
         gt_image = cv2.imread(self.gt_image_file_names[batch_index]).astype(np.float32) / 255.
         gt_image = cv2.cvtColor(gt_image, cv2.COLOR_BGR2RGB)
         gt_tensor = image_to_tensor(gt_image, False, False)
@@ -126,8 +126,8 @@ class PairedImageDataset(Dataset):
 
     def __getitem__(self, batch_index: int) -> [Tensor, Tensor, str]:
         # Read a batch of image data
-        transform = torchvision.transforms.Compose([transforms.Resize((1356,2040))])
-        transform1 = torchvision.transforms.Compose([transforms.Resize((339,510))])
+        transform = torchvision.transforms.Compose([torchvision.transforms.Resize((1356,2040))])
+        transform1 = torchvision.transforms.Compose([torchvision.transforms.Resize((339,510))])
         gt_image = cv2.imread(self.paired_gt_image_file_names[batch_index]).astype(np.float32) / 255.
         lr_image = cv2.imread(self.paired_lr_image_file_names[batch_index]).astype(np.float32) / 255.
 
