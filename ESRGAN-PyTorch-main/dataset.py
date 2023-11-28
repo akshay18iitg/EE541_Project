@@ -21,6 +21,7 @@ import torch
 from natsort import natsorted
 from torch import Tensor
 from torch.utils.data import Dataset, DataLoader
+import torchvision
 
 from imgproc import image_to_tensor, image_resize
 
@@ -74,15 +75,19 @@ class BaseImageDataset(Dataset):
             batch_index: int
     ) -> [Tensor, Tensor]:
         # Read a batch of ground truth images
+        transform = torchvision.transforms.Compose([transforms.Resize((1356,2040))])
+        transform1 = torchvision.transforms.Compose([transforms.Resize((339,510))])
         gt_image = cv2.imread(self.gt_image_file_names[batch_index]).astype(np.float32) / 255.
         gt_image = cv2.cvtColor(gt_image, cv2.COLOR_BGR2RGB)
         gt_tensor = image_to_tensor(gt_image, False, False)
+        gt_tensor = transform(gt_tensor)
 
         # Read a batch of low-resolution images
         if self.lr_image_file_names is not None:
             lr_image = cv2.imread(self.lr_image_file_names[batch_index]).astype(np.float32) / 255.
             lr_image = cv2.cvtColor(lr_image, cv2.COLOR_BGR2RGB)
             lr_tensor = image_to_tensor(lr_image, False, False)
+            lr_tensor = transform1(lr_tensor)
         else:
             lr_tensor = image_resize(gt_tensor, 1 / self.upscale_factor)
 
@@ -121,6 +126,8 @@ class PairedImageDataset(Dataset):
 
     def __getitem__(self, batch_index: int) -> [Tensor, Tensor, str]:
         # Read a batch of image data
+        transform = torchvision.transforms.Compose([transforms.Resize((1356,2040))])
+        transform1 = torchvision.transforms.Compose([transforms.Resize((339,510))])
         gt_image = cv2.imread(self.paired_gt_image_file_names[batch_index]).astype(np.float32) / 255.
         lr_image = cv2.imread(self.paired_lr_image_file_names[batch_index]).astype(np.float32) / 255.
 
@@ -131,7 +138,9 @@ class PairedImageDataset(Dataset):
         # Convert image data into Tensor stream format (PyTorch).
         # Note: The range of input and output is between [0, 1]
         gt_tensor = image_to_tensor(gt_image, False, False)
+        gt_tensor = transform(gt_tensor)
         lr_tensor = image_to_tensor(lr_image, False, False)
+        lr_tensor = transform1(lr_tensor)
 
         return {"gt": gt_tensor,
                 "lr": lr_tensor,
