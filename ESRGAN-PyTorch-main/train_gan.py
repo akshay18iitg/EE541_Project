@@ -256,8 +256,8 @@ def build_model(
                                                            num_rrdb=config["MODEL"]["G"]["NUM_RRDB"])
     d_model = model.__dict__[config["MODEL"]["D"]["NAME"]](in_channels=config["MODEL"]["D"]["IN_CHANNELS"],
                                                            out_channels=config["MODEL"]["D"]["OUT_CHANNELS"],
-                                                           channels=config["MODEL"]["D"]["CHANNELS"],
-                                                           upsample_method=config["MODEL"]["D"]["UPSAMPLE_METHOD"])
+                                                           channels=config["MODEL"]["D"]["CHANNELS"])
+                                                           # ,upsample_method=config["MODEL"]["D"]["UPSAMPLE_METHOD"])
 
     g_model = g_model.to(device)
     d_model = d_model.to(device)
