@@ -214,7 +214,7 @@ def load_dataset(
     # Load the train dataset
     degenerated_train_datasets = BaseImageDataset(
         config["TRAIN"]["DATASET"]["TRAIN_GT_IMAGES_DIR"],
-        None,
+        config["TRAIN"]["DATASET"]["TRAIN_LR_IMAGES_DIR"],
         config["SCALE"],
     )
 

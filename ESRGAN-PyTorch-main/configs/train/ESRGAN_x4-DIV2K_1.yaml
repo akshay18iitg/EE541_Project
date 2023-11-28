@@ -31,6 +31,7 @@ MODEL:
 TRAIN:
   DATASET:
     TRAIN_GT_IMAGES_DIR: ./data/DIV2K_train_HR
+    TRAIN_LR_IMAGES_DIR: ./data/DIV2K_train_LR_mild
 
     GT_IMAGE_SIZE: 128
 
