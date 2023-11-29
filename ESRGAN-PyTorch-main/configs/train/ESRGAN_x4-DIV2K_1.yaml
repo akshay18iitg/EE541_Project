@@ -48,7 +48,7 @@ TRAIN:
     SHUFFLE: True
     NUM_WORKERS: 0
     PIN_MEMORY: True
-    PERSISTENT_WORKERS: True
+    PERSISTENT_WORKERS: False
 
     EPOCHS: 2  # 400,000 iters
 
@@ -87,8 +87,8 @@ TRAIN:
 
 TEST:
   DATASET:
-    PAIRED_TEST_GT_IMAGES_DIR: "./data/DIV2K_valid_HR"
-    PAIRED_TEST_LR_IMAGES_DIR: "./data/DIV2K_valid_LR_mild"
+    PAIRED_TEST_GT_IMAGES_DIR: ./data/DIV2K_valid_HR
+    PAIRED_TEST_LR_IMAGES_DIR: ./data/DIV2K_valid_LR_mild
 
   # Test hyperparameters
   HYP:
