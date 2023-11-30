@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import torchvision
 from torchvision import transforms
 from losses import TVLoss, perceptual_loss
 from dataset import *
