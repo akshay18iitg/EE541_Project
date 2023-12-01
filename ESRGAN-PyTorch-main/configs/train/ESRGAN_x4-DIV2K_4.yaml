@@ -1,5 +1,5 @@
 # experiment name
-EXP_NAME: ESRGAN_x4-DIV2K_32
+EXP_NAME: ESRGAN_x4-DIV2K
 # random number seed
 SEED: 0
 # super resolution magnification factor
@@ -33,7 +33,7 @@ TRAIN:
     TRAIN_GT_IMAGES_DIR: ./data/DIV2K_train_HR
     TRAIN_LR_IMAGES_DIR: ./data/DIV2K_train_LR_mild
 
-    GT_IMAGE_SIZE: 128
+    GT_IMAGE_SIZE: 256
 
   # Model file address, used for pre-training and recovery training
   CHECKPOINT:
@@ -44,7 +44,7 @@ TRAIN:
 
   # training hyperparameters
   HYP:
-    IMGS_PER_BATCH: 32
+    IMGS_PER_BATCH: 16
     SHUFFLE: True
     NUM_WORKERS: 0
     PIN_MEMORY: True
