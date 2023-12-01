@@ -19,7 +19,7 @@ MODEL:
     OUT_CHANNELS: 3
     CHANNELS: 64
     GROWTH_CHANNELS: 32
-    NUM_RRDB: 64
+    NUM_RRDB: 23
     COMPILED: True
   D:
     NAME: discriminator_for_vgg
@@ -44,7 +44,7 @@ TRAIN:
 
   # training hyperparameters
   HYP:
-    IMGS_PER_BATCH: 16
+    IMGS_PER_BATCH: 64
     SHUFFLE: True
     NUM_WORKERS: 0
     PIN_MEMORY: True
