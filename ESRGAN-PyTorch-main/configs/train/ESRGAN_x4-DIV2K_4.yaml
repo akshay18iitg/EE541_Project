@@ -19,7 +19,7 @@ MODEL:
     OUT_CHANNELS: 3
     CHANNELS: 64
     GROWTH_CHANNELS: 32
-    NUM_RRDB: 23
+    NUM_RRDB: 46
     COMPILED: True
   D:
     NAME: discriminator_for_vgg
@@ -33,7 +33,7 @@ TRAIN:
     TRAIN_GT_IMAGES_DIR: ./data/DIV2K_train_HR
     TRAIN_LR_IMAGES_DIR: ./data/DIV2K_train_LR_mild
 
-    GT_IMAGE_SIZE: 256
+    GT_IMAGE_SIZE: 128
 
   # Model file address, used for pre-training and recovery training
   CHECKPOINT:
