@@ -32,14 +32,14 @@ class mydata(Dataset):
         # transform1 = torchvision.transforms.Compose([torchvision.transforms.Resize((339,510))])
         if self.in_memory:
             GT = self.GT_img[i].astype(np.float32)
-            GT = np.resize(GT,(1356,2040))
+            GT = np.resize(GT,(1356,2040,3))
             LR = self.LR_img[i].astype(np.float32)
-            LR = np.resize(LR,(339,510))
+            LR = np.resize(LR,(339,510,3))
         else:
             GT = np.array(Image.open(os.path.join(self.GT_path, self.GT_img[i])).convert("RGB"))
-            GT = np.resize(GT,(1356,2040))
+            GT = np.resize(GT,(1356,2040,3))
             LR = np.array(Image.open(os.path.join(self.LR_path, self.LR_img[i])).convert("RGB"))
-            LR = np.resize(LR,(339,510))
+            LR = np.resize(LR,(339,510,3))
 
         img_item['GT'] = (GT / 127.5) - 1.0
         img_item['LR'] = (LR / 127.5) - 1.0

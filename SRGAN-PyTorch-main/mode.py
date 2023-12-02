@@ -12,6 +12,7 @@ import numpy as np
 from PIL import Image
 from skimage.color import rgb2ycbcr
 # from skimage.measure import compare_psnr
+from torch.utils.tensorboard import SummaryWriter
 from skimage.metrics import peak_signal_noise_ratio as campare_psnr
 
 def train(args):
@@ -24,6 +25,9 @@ def train(args):
 
     generator = Generator(img_feat = 3, n_feats = 64, kernel_size = 3, num_block = args.res_num, scale=args.scale)
 
+    samples_dir = os.path.join("samples", args.exp)
+
+    writer = SummaryWriter(os.path.join("samples", "logs", args.exp))
 
     if args.fine_tuning:
         generator.load_state_dict(torch.load(args.generator_path))
@@ -52,12 +56,14 @@ def train(args):
             loss.backward()
             g_optim.step()
 
+        writer.add_scalar(f"Train/G_loss_pre_train", loss.item(), pre_epoch + 1)
         pre_epoch += 1
 
         if pre_epoch % 2 == 0:
-            print(pre_epoch)
-            print(loss.item())
-            print('=========')
+            print(f'pre_epoch : {pre_epoch} , g_loss_pre_train : {loss.item()}')
+            # print(pre_epoch)
+            # print(loss.item())
+            # print('=========')
 
         if pre_epoch % 800 ==0:
             torch.save(generator.state_dict(), './model/pre_trained_model_%03d.pt'%pre_epoch)
@@ -98,6 +104,7 @@ def train(args):
 
             d_loss = d_loss_real + d_loss_fake
 
+
             g_optim.zero_grad()
             d_optim.zero_grad()
             d_loss.backward()
@@ -121,7 +128,13 @@ def train(args):
             g_loss.backward()
             g_optim.step()
 
-
+        writer.add_scalar(f"Train/D_loss_fine_train", d_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/G_loss_fine_train", percep_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/D_loss_fine_train", adversarial_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/D_loss_fine_train", total_variance_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/D_loss_fine_train", L2_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/D_loss_fine_train", g_loss.item(), fine_epoch + 1)
+        writer.add_scalar(f"Train/D_loss_fine_train", d_loss.item(), fine_epoch + 1)
         fine_epoch += 1
 
         if fine_epoch % 2 == 0:
