@@ -14,6 +14,7 @@ from skimage.color import rgb2ycbcr
 # from skimage.measure import compare_psnr
 from torch.utils.tensorboard import SummaryWriter
 from skimage.metrics import peak_signal_noise_ratio as campare_psnr
+from utils import build_iqa_model, load_pretrained_state_dict, make_directory, AverageMeter, ProgressMeter, Summary
 
 def train(args):
 
@@ -23,11 +24,20 @@ def train(args):
     dataset = mydata(GT_path = args.GT_path, LR_path = args.LR_path, in_memory = args.in_memory, transform = transform)
     loader = DataLoader(dataset, batch_size = args.batch_size, shuffle = True, num_workers = args.num_workers)
 
+    val_dataset = mydata(GT_path = args.GT_path_val, LR_path = args.LR_path_val, in_memory = False, transform = None)
+    val_loader = DataLoader(val_dataset, batch_size = 1, shuffle = False, num_workers = args.num_workers)
+
     generator = Generator(img_feat = 3, n_feats = 64, kernel_size = 3, num_block = args.res_num, scale=args.scale)
 
     samples_dir = os.path.join("samples", args.exp)
 
     writer = SummaryWriter(os.path.join("samples", "logs", args.exp))
+
+    psnr_model, ssim_model = build_iqa_model(
+        args.scale,
+        True,
+        device)
+
 
     if args.fine_tuning:
         generator.load_state_dict(torch.load(args.generator_path))
@@ -56,11 +66,55 @@ def train(args):
             loss.backward()
             g_optim.step()
 
+        psnres = AverageMeter("PSNR", ":4.2f", Summary.AVERAGE)
+        ssimes = AverageMeter("SSIM", ":4.4f", Summary.AVERAGE)
+
+        g_model.eval()
+
+        with torch.no_grad():
+            for i, te_data in enumerate(val_loader):
+                gt = te_data['GT'].to(device)
+                lr = te_data['LR'].to(device)
+
+                bs, c, h, w = lr.size()
+                # gt = gt[:, :, : h * args.scale, : w *args.scale]
+
+                sr, _ = generator(lr)
+
+                # output = output[0].cpu().numpy()
+                # output = np.clip(output, -1.0, 1.0)
+                # gt = gt[0].cpu().numpy()
+                #
+                # output = (output + 1.0) / 2.0
+                # gt = (gt + 1.0) / 2.0
+                #
+                # output = output.transpose(1,2,0)
+                # gt = gt.transpose(1,2,0)
+
+                # y_output = rgb2ycbcr(output)[args.scale:-args.scale, args.scale:-args.scale, :1]
+                # y_gt = rgb2ycbcr(gt)[args.scale:-args.scale, args.scale:-args.scale, :1]
+                #
+                # psnr = compare_psnr(y_output / 255.0, y_gt / 255.0, data_range = 1.0)
+                # psnr_list.append(psnr)
+                # f.write('psnr : %04f \n' % psnr)
+
+                psnr = psnr_model(sr, gt)
+                ssim = ssim_model(sr, gt)
+
+                # record current metrics
+                psnres.update(psnr.item(), sr.size(0))
+                ssimes.update(ssim.item(), ssim.size(0))
+
+                # result = Image.fromarray((output * 255.0).astype(np.uint8))
+                # result.save('./result/res_%04d.png'%i)
+
+        writer.add_scalar(f"Test/PSNR", psnres.avg, pre_epoch + 1)
+        writer.add_scalar(f"Test/PSNR", ssimes.avg, pre_epoch + 1)
         writer.add_scalar(f"Train/G_loss_pre_train", loss.item(), pre_epoch + 1)
         pre_epoch += 1
 
-        if pre_epoch % 2 == 0:
-            print(f'pre_epoch : {pre_epoch} , g_loss_pre_train : {loss.item()}')
+        # if pre_epoch % 2 == 0:
+        print(f'pre_epoch : {pre_epoch} , g_loss_pre_train : {loss.item()}, PSNR : {psnres.avg} , SSIM : {ssimes.avg}')
             # print(pre_epoch)
             # print(loss.item())
             # print('=========')
@@ -128,6 +182,27 @@ def train(args):
             g_loss.backward()
             g_optim.step()
 
+        psnres = AverageMeter("PSNR", ":4.2f", Summary.AVERAGE)
+        ssimes = AverageMeter("SSIM", ":4.4f", Summary.AVERAGE)
+
+        g_model.eval()
+
+        with torch.no_grad():
+            for i, te_data in enumerate(val_loader):
+                gt = te_data['GT'].to(device)
+                lr = te_data['LR'].to(device)
+
+                sr, _ = generator(lr)
+
+                psnr = psnr_model(sr, gt)
+                ssim = ssim_model(sr, gt)
+
+                # record current metrics
+                psnres.update(psnr.item(), sr.size(0))
+                ssimes.update(ssim.item(), ssim.size(0))
+
+        writer.add_scalar(f"Test/PSNR", psnres.avg, fine_epoch + 1)
+        writer.add_scalar(f"Test/PSNR", ssimes.avg, fine_epoch + 1)
         writer.add_scalar(f"Train/D_loss_fine_train", d_loss.item(), fine_epoch + 1)
         writer.add_scalar(f"Train/G_loss_fine_train", percep_loss.item(), fine_epoch + 1)
         writer.add_scalar(f"Train/D_loss_fine_train", adversarial_loss.item(), fine_epoch + 1)
@@ -137,11 +212,12 @@ def train(args):
         writer.add_scalar(f"Train/D_loss_fine_train", d_loss.item(), fine_epoch + 1)
         fine_epoch += 1
 
-        if fine_epoch % 2 == 0:
-            print(fine_epoch)
-            print(g_loss.item())
-            print(d_loss.item())
-            print('=========')
+        # if fine_epoch % 2 == 0:
+        print(f'fine_epoch : {fine_epoch} , g_loss_fine_train : {g_loss.item()}, d_loss_fine_train : {d_loss.item()} , PSNR : {psnres.avg} , SSIM : {ssimes.avg}')
+            # print(fine_epoch)
+            # print(g_loss.item())
+            # print(d_loss.item())
+            # print('=========')
 
         if fine_epoch % 500 ==0:
             #torch.save(generator.state_dict(), './model/SRGAN_gene_%03d.pt'%fine_epoch)
