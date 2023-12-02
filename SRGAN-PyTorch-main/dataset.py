@@ -28,18 +28,18 @@ class mydata(Dataset):
     def __getitem__(self, i):
 
         img_item = {}
-        transform = torchvision.transforms.Compose([torchvision.transforms.Resize((1356,2040))])
-        transform1 = torchvision.transforms.Compose([torchvision.transforms.Resize((339,510))])
+        # transform = torchvision.transforms.Compose([torchvision.transforms.Resize((1356,2040))])
+        # transform1 = torchvision.transforms.Compose([torchvision.transforms.Resize((339,510))])
         if self.in_memory:
             GT = self.GT_img[i].astype(np.float32)
-            GT = transform(GT)
+            GT = np.resize(GT,(1356,2040))
             LR = self.LR_img[i].astype(np.float32)
-            LR = transform1(LR)
+            LR = np.resize(LR,(339,510))
         else:
             GT = np.array(Image.open(os.path.join(self.GT_path, self.GT_img[i])).convert("RGB"))
-            GT = transform(GT)
+            GT = np.resize(GT,(1356,2040))
             LR = np.array(Image.open(os.path.join(self.LR_path, self.LR_img[i])).convert("RGB"))
-            LR = transform1(LR)
+            LR = np.resize(LR,(339,510))
 
         img_item['GT'] = (GT / 127.5) - 1.0
         img_item['LR'] = (LR / 127.5) - 1.0
