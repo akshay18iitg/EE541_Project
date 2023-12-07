@@ -69,7 +69,7 @@ def train(args):
         psnres = AverageMeter("PSNR", ":4.2f", Summary.AVERAGE)
         ssimes = AverageMeter("SSIM", ":4.4f", Summary.AVERAGE)
 
-        g_model.eval()
+        generator.eval()
 
         with torch.no_grad():
             for i, te_data in enumerate(val_loader):
@@ -202,7 +202,7 @@ def train(args):
                 ssimes.update(ssim.item(), ssim.size(0))
 
         writer.add_scalar(f"Test/PSNR", psnres.avg, fine_epoch + 1)
-        writer.add_scalar(f"Test/PSNR", ssimes.avg, fine_epoch + 1)
+        writer.add_scalar(f"Test/SSIM", ssimes.avg, fine_epoch + 1)
         writer.add_scalar(f"Train/D_loss_fine_train", d_loss.item(), fine_epoch + 1)
         writer.add_scalar(f"Train/G_loss_fine_train", percep_loss.item(), fine_epoch + 1)
         writer.add_scalar(f"Train/D_loss_fine_train", adversarial_loss.item(), fine_epoch + 1)
